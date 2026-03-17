@@ -1,0 +1,114 @@
+spring:
+  application:
+    name: audit-proxy
+
+server:
+  port: 8081
+
+ms:
+  properties:
+    info-system-code: "INFO_SYSTEM_CODE"   # заменить на реальный
+    info-system-id: "12345"                # заменить
+    appName: ${spring.application.name}
+
+audit:
+  enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    topic: audit-v2
+    security:
+      protocol: SSL
+    ssl:
+      key-store-location: ${KAFKA_KEYSTORE_LOCATION:file:/etc/certificate/kafka-keystore.jks}
+      key-store-type: JKS
+      key-store-password: ${KAFKA_KEYSTORE_PASSWORD}
+      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION:file:/etc/certificate/kafka-truststore.jks}
+      trust-store-type: JKS
+      trust-store-password: ${KAFKA_TRUSTSTORE_PASSWORD}
+      key-password: ${KAFKA_KEY_PASSWORD}
+    producer:
+      properties:
+        max.block.ms: 10000
+        default.api.timeout.ms: 10000
+        request.timeout.ms: 10000
+        slider.wait.ms: 5000
+    properties:
+      slider.enable: true
+
+  standin-kafka:
+    enabled: ${STANDIN_KAFKA_ENABLED:false}
+    bootstrap-servers: ${STANDIN_KAFKA_BOOTSTRAP_SERVERS:}
+    security:
+      protocol: SSL
+    ssl:
+      key-store-location: ${STANDIN_KAFKA_KEYSTORE_LOCATION:}
+      key-store-type: JKS
+      key-store-password: ${STANDIN_KAFKA_KEYSTORE_PASSWORD:}
+      trust-store-location: ${STANDIN_KAFKA_TRUSTSTORE_LOCATION:}
+      trust-store-type: JKS
+      trust-store-password: ${STANDIN_KAFKA_TRUSTSTORE_PASSWORD:}
+      key-password: ${STANDIN_KAFKA_KEY_PASSWORD:}
+    producer:
+      properties:
+        max.block.ms: 10000
+        default.api.timeout.ms: 10000
+        request.timeout.ms: 10000
+        slider.wait.ms: 5000
+    properties:
+      slider.enable: true
+
+  blocking:
+    blocking-skip-time: 300000
+  all-block: false
+
+  in-memory-skipped-storage:
+    enabled: true
+    resend-cron: "0 */10 * * * *"
+    delay-force-send: 300
+
+  circular-buffer:
+    enabled: true
+    capacity: 10000   # рассчитать исходя из RPS и времени недоступности
+
+  deployment-context:
+    pod-name-environment: AUDITOMNI_POD_NAME
+    pod-namespace-environment: AUDITOMNI_POD_NAMESPACE
+
+  default-resolver:
+    sub: "unknown"
+    channel: "unknown"
+
+  develop-mode: false
+
+  health:
+    kafka:
+      enabled: true
+
+audit-events:
+  auditEventCodeList:
+    - event-code: "CUSTOMER_CREATE"
+      schema: "vtb"
+    - event-code: "DOCUMENT_SIGN"
+      schema: "vtb_24"
+  block-settings:
+    CUSTOMER_CREATE: true
+    DOCUMENT_SIGN: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-components: always
+  health:
+    defaults:
+      enabled: false
+    audit:
+      kafka:
+        enabled: true
+
+logging:
+  level:
+    ru.vtb.omni.audit: DEBUG

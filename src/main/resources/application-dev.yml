@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: audit-proxy-dev
+
+ms:
+  properties:
+    info-system-code: "DEV_CODE"
+    info-system-id: "11111"
+
+audit:
+  kafka:
+    bootstrap-servers: localhost:9092
+    security:
+      protocol: PLAINTEXT   # для разработки без SSL
+  standin-kafka:
+    enabled: false

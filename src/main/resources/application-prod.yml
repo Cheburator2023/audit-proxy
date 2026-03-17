@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: audit-proxy-prod
+
+ms:
+  properties:
+    info-system-code: "PROD_CODE"
+    info-system-id: "99999"
+
+audit:
+  kafka:
+    bootstrap-servers: kafka-cluster-prod:9092
+  standin-kafka:
+    enabled: true
+    bootstrap-servers: kafka-cluster-standin:9092
