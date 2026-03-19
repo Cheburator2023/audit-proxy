@@ -23,7 +23,6 @@ configurations {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven {
         url = uri("https://sfera.inno.local/repo-ci-maven/repositories/browse/tsau-maven-pub/")
@@ -32,12 +31,16 @@ repositories {
             password = project.findProperty("nexusPass") as String? ?: System.getenv("!@#$%^&Gabb987Inno")
         }
     }
+    mavenLocal()
+    flatDir {
+        dirs ("C:/Users/VGabbasov/Documents/test/")
+    }
 }
 
 dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.11")
-        // mavenBom("ru.vtb.omni:omni-dependencies:7.0.0") // версия BOM платформы
+         mavenBom("ru.vtb.omni:omni-dependencies:7.0.0") // версия BOM платформы
     }
 }
 
@@ -46,13 +49,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("audit-lib:70.0.0.1:sources@jar")
 
     // Библиотеки аудита (обязательные)
-    // implementation("ru.vtb.omni:tsau-audit-lib-in-memory-storage")
-    // implementation("ru.vtb.omni:tsau-audit-lib-kafka-sender")
-    // implementation("ru.vtb.omni:tsau-audit-lib-servlet-context") // для резолверов HTTP
-    // implementation("ru.vtb.omni:tsau-audit-lib-blocking-context") // для блокирующих событий
-    // implementation("ru.vtb.omni:tsau-audit-lib-metric")           // для метрик
+     implementation("ru.vtb.omni:tsau-audit-lib-in-memory-storage")
+     implementation("ru.vtb.omni:tsau-audit-lib-kafka-sender")
+     implementation("ru.vtb.omni:tsau-audit-lib-servlet-context") // для резолверов HTTP
+     implementation("ru.vtb.omni:tsau-audit-lib-blocking-context") // для блокирующих событий
+     implementation("ru.vtb.omni:tsau-audit-lib-metric")           // для метрик
 
     // Драйвер метрик Prometheus
     implementation("io.micrometer:micrometer-registry-prometheus")
