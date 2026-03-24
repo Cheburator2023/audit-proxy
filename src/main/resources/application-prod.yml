@@ -4,8 +4,8 @@ spring:
 
 ms:
   properties:
-    info-system-code: "PROD_CODE"
-    info-system-id: "99999"
+    info-system-code: "SUM_BACKEND"
+    info-system-id: "1661"
 
 audit:
   kafka:
