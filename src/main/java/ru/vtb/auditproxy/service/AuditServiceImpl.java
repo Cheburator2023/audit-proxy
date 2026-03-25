@@ -6,23 +6,19 @@ import org.springframework.stereotype.Service;
 import ru.vtb.auditproxy.config.AuditEventsProperties;
 import ru.vtb.auditproxy.dto.AuditRequest;
 import ru.vtb.auditproxy.dto.AuditResponse;
-import ru.vtb.auditproxy.dto.EventClass;
 import ru.vtb.auditproxy.exception.AuditSendException;
-import ru.vtb.omni.audit.sender.AuditEventSender;
+import ru.vtb.omni.audit.core.sender.AuditEventSender;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
-    private final AuditEventSender<Object> kafkaAuditEventSender;
+
+    private final AuditEventSender<?> auditEventSender;
     private final TechFieldsProvider techFieldsProvider;
     private final AuditEventsProperties auditEventsProperties;
 
@@ -55,23 +51,15 @@ public class AuditServiceImpl implements AuditService {
 
         try {
             // Отправка события
-            CompletableFuture<?> future = kafkaAuditEventSender.sendEvent(eventMap);
-
             if (isBlocking) {
-                // Для блокирующих событий дожидаемся подтверждения
-                future.get(10, TimeUnit.SECONDS); // таймаут можно вынести в конфиг
+                // Для блокирующих событий вызываем синхронно – при ошибке будет исключение
+                String eventId = (String) auditEventSender.sendEvent(eventMap);
+                log.debug("Blocking audit event sent, id: {}", eventId);
             } else {
-                // Для неблокирующих — не ждём, только логируем возможные ошибки
-                future.whenComplete((result, ex) -> {
-                    if (ex != null) {
-                        log.error("Non-blocking audit event send failed asynchronously", ex);
-                    }
-                });
+                // Для неблокирующих – вызываем и не ждём, ловим возможные ошибки
+                auditEventSender.sendEvent(eventMap);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new AuditSendException("Interrupted while sending audit event", e);
-        } catch (ExecutionException | TimeoutException e) {
+        } catch (Exception e) {
             if (isBlocking) {
                 throw new AuditSendException("Failed to send blocking audit event", e);
             } else {

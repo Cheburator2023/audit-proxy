@@ -4,7 +4,7 @@ import io.opentelemetry.api.trace.Span;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import ru.vtb.omni.audit.properties.AuditMsProperties;
+import ru.vtb.omni.audit.core.properties.AuditMsProperties;
 
 import java.util.Map;
 

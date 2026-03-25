@@ -7,8 +7,8 @@ server:
 
 ms:
   properties:
-    info-system-code: "INFO_SYSTEM_CODE"   # заменить на реальный
-    info-system-id: "12345"                # заменить
+    info-system-code: "SUM_BACKEND"
+    info-system-id: "1661"
     appName: ${spring.application.name}
 
 audit:
@@ -88,8 +88,12 @@ audit-events:
   auditEventCodeList:
     - event-code: "CUSTOMER_CREATE"
       schema: "vtb"
+      resolvers: []
+      list-resolvers: []
     - event-code: "DOCUMENT_SIGN"
       schema: "vtb_24"
+      resolvers: []
+      list-resolvers: []
   block-settings:
     CUSTOMER_CREATE: true
     DOCUMENT_SIGN: false
