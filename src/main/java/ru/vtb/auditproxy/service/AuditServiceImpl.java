@@ -12,6 +12,10 @@ import ru.vtb.omni.audit.core.sender.AuditEventSender;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
@@ -24,28 +28,26 @@ public class AuditServiceImpl implements AuditService {
 
     @Override
     public AuditResponse sendAuditEvent(AuditRequest request) {
-        // 1. Формируем базовую мапу события
+        // Формируем базовую мапу события
         Map<String, Object> eventMap = new HashMap<>();
         if (request.getAdditionalFields() != null) {
             eventMap.putAll(request.getAdditionalFields());
         }
 
-        // 2. Добавляем класс события
-        eventMap.put("event_class", request.getEventClass().name());
+        // Обязательные поля согласно схеме vtb
+        eventMap.put("clazz", request.getEventClass().name());
+        eventMap.put("event_code", request.getEventCode());
 
-        // 3. Добавляем технические поля (не перетираем переданные)
+        // timestamp
+        String timestamp = request.getTimestamp() != null ? request.getTimestamp() : Instant.now().toString();
+        eventMap.putIfAbsent("timestamp", timestamp);
+        // oper_time
+        eventMap.putIfAbsent("oper_time", timestamp);
+
+        // Технические поля (код и id системы)
         techFieldsProvider.enrich(eventMap);
 
-        // 4. Устанавливаем временную метку, если не задана
-        if (!eventMap.containsKey("oper_timestamp")) {
-            if (request.getTimestamp() != null) {
-                eventMap.put("oper_timestamp", request.getTimestamp());
-            } else {
-                eventMap.put("oper_timestamp", Instant.now().toString());
-            }
-        }
-
-        // 5. Проверяем, блокирующее ли событие
+        // Проверяем, блокирующее ли событие
         boolean isBlocking = auditEventsProperties.getBlockSettings()
                 .getOrDefault(request.getEventCode(), false);
 

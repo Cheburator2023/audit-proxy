@@ -14,3 +14,7 @@ audit:
       protocol: PLAINTEXT   # для разработки без SSL
   standin-kafka:
     enabled: false
+logging:
+  level:
+    ru.vtb.omni.audit: DEBUG
+    org.apache.kafka: DEBUG

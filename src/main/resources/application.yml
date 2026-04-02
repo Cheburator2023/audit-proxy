@@ -86,17 +86,42 @@ audit:
 
 audit-events:
   auditEventCodeList:
-    - event-code: "CUSTOMER_CREATE"
+    - event-code: "SUMD_CREATEMODEL"
       schema: "vtb"
       resolvers: []
       list-resolvers: []
-    - event-code: "DOCUMENT_SIGN"
-      schema: "vtb_24"
+    - event-code: "SUMD_REMOVEMODEL"
+      schema: "vtb"
+      resolvers: []
+      list-resolvers: []
+    - event-code: "SUMD_CANCELMODEL"
+      schema: "vtb"
+      resolvers: []
+      list-resolvers: []
+    - event-code: "SUMD_UPLOADREPORT"
+      schema: "vtb"
+      resolvers: []
+      list-resolvers: []
+    - event-code: "SUMD_TASKCOMPLETE"
+      schema: "vtb"
+      resolvers: []
+      list-resolvers: []
+    - event-code: "SUMD_ROLLBACKMODEL"
+      schema: "vtb"
+      resolvers: []
+      list-resolvers: []
+    - event-code: "SUMD_AUTH"
+      schema: "vtb"
       resolvers: []
       list-resolvers: []
   block-settings:
-    CUSTOMER_CREATE: true
-    DOCUMENT_SIGN: false
+    SUMD_CREATEMODEL: false
+    SUMD_REMOVEMODEL: false
+    SUMD_CANCELMODEL: false
+    SUMD_UPLOADREPORT: false
+    SUMD_TASKCOMPLETE: false
+    SUMD_ROLLBACKMODEL: false
+    SUMD_AUTH: false
 
 management:
   endpoints:
