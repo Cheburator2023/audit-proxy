@@ -8,13 +8,99 @@ ms:
     info-system-id: "1661"
 
 audit:
+  enabled: false
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: omni1-emulator-kafka:9092
+    topic: audit-v2
     security:
       protocol: PLAINTEXT   # для разработки без SSL
+    ssl:
+      key-store-location: ""
+      key-store-type: ""
+      key-store-password: ""
+      trust-store-location: ""
+      trust-store-type: ""
+      trust-store-password: ""
+      key-password: ""
+    producer:
+      properties:
+        max.block.ms: 30000
+        default.api.timeout.ms: 30000
+        request.timeout.ms: 30000
+        delivery.timeout.ms: 60000
+        retries: 10
+        retry.backoff.ms: 1000
+        slider.wait.ms: 5000
+    properties:
+      slider.enable: true
   standin-kafka:
     enabled: false
+  blocking:
+    blocking-skip-time: 300000
+  all-block: false
+  in-memory-skipped-storage:
+    enabled: true
+    resend-cron: "0 */10 * * * *"
+    delay-force-send: 300
+  circular-buffer:
+    enabled: true
+    capacity: 10000
+  deployment-context:
+    pod-name-environment: AUDITOMNI_POD_NAME
+    pod-namespace-environment: AUDITOMNI_POD_NAMESPACE
+  default-resolver:
+    sub: "emulator"
+    channel: "emulator"
+  develop-mode: true
+  health:
+    kafka:
+      enabled: true
+
+audit-events:
+  auditEventCodeList:
+    - event-code: "SUMD_CREATEMODEL"
+      schema: "vtb"
+    - event-code: "SUMD_REMOVEMODEL"
+      schema: "vtb"
+    - event-code: "SUMD_CANCELMODEL"
+      schema: "vtb"
+    - event-code: "SUMD_UPLOADREPORT"
+      schema: "vtb"
+    - event-code: "SUMD_TASKCOMPLETE"
+      schema: "vtb"
+    - event-code: "SUMD_ROLLBACKMODEL"
+      schema: "vtb"
+    - event-code: "SUMD_AUTH"
+      schema: "vtb"
+  block-settings:
+    SUMD_CREATEMODEL: false
+    SUMD_REMOVEMODEL: false
+    SUMD_CANCELMODEL: false
+    SUMD_UPLOADREPORT: false
+    SUMD_TASKCOMPLETE: false
+    SUMD_ROLLBACKMODEL: false
+    SUMD_AUTH: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-components: always
+  health:
+    defaults:
+      enabled: false
+    audit:
+      kafka:
+        enabled: true
+
 logging:
   level:
     ru.vtb.omni.audit: DEBUG
     org.apache.kafka: DEBUG
+    ru.vtb.auditproxy: DEBUG
+    ru.vtb.auditproxy.diagnostics: DEBUG
+
+debug: true

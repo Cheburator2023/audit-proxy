@@ -2,12 +2,14 @@ package ru.vtb.auditproxy.service;
 
 import io.opentelemetry.api.trace.Span;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import ru.vtb.omni.audit.core.properties.AuditMsProperties;
 
 import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TechFieldsProvider {
@@ -16,8 +18,11 @@ public class TechFieldsProvider {
 
     public void enrich(Map<String, Object> eventMap) {
         // Код системы
-        eventMap.putIfAbsent("event_infoSystemCode", auditMsProperties.getInfoSystemCode());
-        eventMap.putIfAbsent("event_infoSystemId", auditMsProperties.getInfoSystemId());
+        String infoSystemCode = auditMsProperties.getInfoSystemCode();
+        String infoSystemId = auditMsProperties.getInfoSystemId();
+        eventMap.putIfAbsent("event_infoSystemCode", infoSystemCode);
+        eventMap.putIfAbsent("event_infoSystemId", infoSystemId);
+        log.debug("TechFields: infoSystemCode={}, infoSystemId={}", infoSystemCode, infoSystemId);
 
         // Namespace и имя пода из переменных окружения
         String namespaceEnv = environment.getProperty(
@@ -28,17 +33,22 @@ public class TechFieldsProvider {
                 "audit.deployment-context.pod-name-environment",
                 "AUDITOMNI_POD_NAME"
         );
-        eventMap.putIfAbsent("context_namespace", System.getenv(namespaceEnv));
-        eventMap.putIfAbsent("context_podName", System.getenv(podNameEnv));
+        String namespace = System.getenv(namespaceEnv);
+        String podName = System.getenv(podNameEnv);
+        eventMap.putIfAbsent("context_namespace", namespace);
+        eventMap.putIfAbsent("context_podName", podName);
+        log.debug("TechFields: namespace={}, podName={} (from env {}/{}))", namespace, podName, namespaceEnv, podNameEnv);
 
         // Трассировка (OpenTelemetry)
         Span currentSpan = Span.current();
         if (currentSpan != null && currentSpan.getSpanContext().isValid()) {
-            eventMap.putIfAbsent("context_traceId", currentSpan.getSpanContext().getTraceId());
-            eventMap.putIfAbsent("context_spanId", currentSpan.getSpanContext().getSpanId());
+            String traceId = currentSpan.getSpanContext().getTraceId();
+            String spanId = currentSpan.getSpanContext().getSpanId();
+            eventMap.putIfAbsent("context_traceId", traceId);
+            eventMap.putIfAbsent("context_spanId", spanId);
+            log.debug("TechFields: traceId={}, spanId={}", traceId, spanId);
         } else {
-            // Если нет активного спана, можно оставить null или сгенерировать новые идентификаторы
-            // В соответствии с рекомендациями оставляем null
+            log.debug("TechFields: no active OpenTelemetry span");
         }
     }
 }

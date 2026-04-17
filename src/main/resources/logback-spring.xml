@@ -4,6 +4,12 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
+
+    <logger name="ru.vtb.omni.audit" level="DEBUG"/>
+    <logger name="org.apache.kafka" level="DEBUG"/>
+    <logger name="ru.vtb.auditproxy" level="DEBUG"/>
+    <logger name="org.springframework.kafka" level="DEBUG"/>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

@@ -12,10 +12,6 @@ import ru.vtb.omni.audit.core.sender.AuditEventSender;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
@@ -51,21 +47,28 @@ public class AuditServiceImpl implements AuditService {
         boolean isBlocking = auditEventsProperties.getBlockSettings()
                 .getOrDefault(request.getEventCode(), false);
 
+        log.debug("Sending audit event: eventCode={}, class={}, blocking={}, fields={}",
+                request.getEventCode(), request.getEventClass(), isBlocking, eventMap);
+
         try {
             // Отправка события
-            if (isBlocking) {
-                // Для блокирующих событий вызываем синхронно – при ошибке будет исключение
-                String eventId = (String) auditEventSender.sendEvent(eventMap);
+            Object sendResult = auditEventSender.sendEvent(eventMap);
+            String eventId = sendResult != null ? sendResult.toString() : "null";
+            log.info("Audit event sent successfully: eventCode={}, id={}, blocking={}",
+                    request.getEventCode(), eventId, isBlocking);
+            if (isBlocking && sendResult instanceof String) {
+                // Для блокирующих синхронно ждём id
                 log.debug("Blocking audit event sent, id: {}", eventId);
-            } else {
-                // Для неблокирующих – вызываем и не ждём, ловим возможные ошибки
-                auditEventSender.sendEvent(eventMap);
             }
         } catch (Exception e) {
+            log.error("Failed to send audit event: eventCode={}, class={}, blocking={}, error={}",
+                    request.getEventCode(), request.getEventClass(), isBlocking, e.getMessage(), e);
             if (isBlocking) {
-                throw new AuditSendException("Failed to send blocking audit event", e);
+                throw new AuditSendException("Failed to send blocking audit event: " + e.getMessage(), e);
             } else {
-                log.error("Non-blocking audit event send failed", e);
+                // Неблокирующее событие – только логируем, исключение не пробрасываем
+                // Библиотека сама должна сохранить событие в буфер (in-memory-skipped-storage)
+                log.warn("Non-blocking audit event lost (only logged): {}", request.getEventCode());
             }
         }
 
