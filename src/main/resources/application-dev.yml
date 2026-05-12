@@ -8,7 +8,7 @@ ms:
     info-system-id: "1661"
 
 audit:
-  enabled: false
+  enabled: true
   kafka:
     bootstrap-servers: omni1-emulator-kafka:9092
     topic: audit-v2
@@ -28,8 +28,8 @@ audit:
         default.api.timeout.ms: 30000
         request.timeout.ms: 30000
         delivery.timeout.ms: 60000
-        retries: 10
-        retry.backoff.ms: 1000
+        retries: 10                 # количество повторных отправок при ошибках Kafka
+        retry.backoff.ms: 1000      # задержка между ретраями
         slider.wait.ms: 5000
     properties:
       slider.enable: true
