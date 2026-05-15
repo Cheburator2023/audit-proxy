@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "ru.vtb"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.3-SNAPSHOT"
 description = "audit-proxy"
 
 java {
@@ -65,6 +65,7 @@ dependencies {
     implementation("ru.vtb.omni:tsau-audit-lib-metric")
     implementation("ru.vtb.omni:tsau-audit-lib-starter")
     implementation("ru.vtb.omni:tsau-audit-lib-validation")
+    implementation("ru.vtb.omni:tsau-audit-lib-template-context")
 
     // Тестирование
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -76,5 +77,5 @@ tasks.withType<Test> {
 }
 
 tasks.withType<BootJar> {
-    archiveFileName.set("audit-sidecar.jar")
+    archiveFileName.set("audit-sidecar-v2.jar")
 }

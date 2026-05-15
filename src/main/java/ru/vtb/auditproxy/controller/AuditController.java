@@ -14,7 +14,7 @@ import ru.vtb.auditproxy.validation.EventCodeValidator;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AuditController {
     private final AuditService auditService;
@@ -22,8 +22,8 @@ public class AuditController {
 
     @PostMapping("/audit")
     public ResponseEntity<AuditResponse> audit(@Valid @RequestBody AuditRequest request) {
-        log.info("Received audit request: eventCode={}, eventClass={}, timestamp={}",
-                request.getEventCode(), request.getEventClass(), request.getTimestamp());
+        log.info("Received audit request (v2): eventCode={}, eventClass={}, correlationId={}, timestamp={}",
+                request.getEventCode(), request.getEventClass(), request.getCorrelationId(), request.getTimestamp());
 
         if (!eventCodeValidator.isValid(request.getEventCode())) {
             log.warn("Invalid event code: {}", request.getEventCode());

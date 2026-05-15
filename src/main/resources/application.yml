@@ -68,7 +68,7 @@ audit:
 
   circular-buffer:
     enabled: true
-    capacity: 10000   # рассчитать исходя из RPS и времени недоступности
+    capacity: 10000
 
   deployment-context:
     pod-name-environment: AUDITOMNI_POD_NAME
@@ -88,32 +88,102 @@ audit-events:
   auditEventCodeList:
     - event-code: "SUMD_CREATEMODEL"
       schema: "vtb"
-      resolvers: []
-      list-resolvers: []
+      auditEventGeneral:
+        event_type: "Создание модели СУМ"
+        object_type: "Модель"
+        object_status: "CREATE"
+        oper_name: "Запрос на создание модели в СУМ"
+      auditEventStart:
+        oper_description: "Начало создания модели"
+      auditEventSuccess:
+        oper_description: "Модель успешно создана"
+      auditEventFailure:
+        oper_description: "Ошибка создания модели"
+
     - event-code: "SUMD_REMOVEMODEL"
       schema: "vtb"
-      resolvers: []
-      list-resolvers: []
+      auditEventGeneral:
+        event_type: "Перевод в Архив"
+        object_type: "Модель"
+        object_status: "Remove"
+        oper_name: "Запрос на перевод модели в статус Архив"
+      auditEventStart:
+        oper_description: "Начало перевода модели в архив"
+      auditEventSuccess:
+        oper_description: "Модель переведена в архив"
+      auditEventFailure:
+        oper_description: "Ошибка перевода модели в архив"
+
     - event-code: "SUMD_CANCELMODEL"
       schema: "vtb"
-      resolvers: []
-      list-resolvers: []
+      auditEventGeneral:
+        event_type: "Отмена разработки"
+        object_type: "Модель"
+        object_status: "Cancel"
+        oper_name: "Запрос на отмену разработки модели"
+      auditEventStart:
+        oper_description: "Начало отмены разработки модели"
+      auditEventSuccess:
+        oper_description: "Разработка модели отменена"
+      auditEventFailure:
+        oper_description: "Ошибка отмены разработки модели"
+
     - event-code: "SUMD_UPLOADREPORT"
       schema: "vtb"
-      resolvers: []
-      list-resolvers: []
+      auditEventGeneral:
+        event_type: "Выгрузка отчета"
+        object_type: "Модель"
+        object_status: "Upload"
+        oper_name: "Запрос на выгрузку отчета в СУМ"
+      auditEventStart:
+        oper_description: "Начало выгрузки отчета"
+      auditEventSuccess:
+        oper_description: "Отчет успешно выгружен"
+      auditEventFailure:
+        oper_description: "Ошибка выгрузки отчета"
+
     - event-code: "SUMD_TASKCOMPLETE"
       schema: "vtb"
-      resolvers: []
-      list-resolvers: []
+      auditEventGeneral:
+        event_type: "Закрытие задачи"
+        object_type: "Модель"
+        object_status: "Complete"
+        oper_name: "Запрос на закрытие задачи"
+      auditEventStart:
+        oper_description: "Начало закрытия задачи"
+      auditEventSuccess:
+        oper_description: "Задача закрыта"
+      auditEventFailure:
+        oper_description: "Ошибка закрытия задачи"
+
     - event-code: "SUMD_ROLLBACKMODEL"
       schema: "vtb"
-      resolvers: []
-      list-resolvers: []
+      auditEventGeneral:
+        event_type: "Откат модели"
+        object_type: "Модель"
+        object_status: "Rollback"
+        oper_name: "Запрос на откат модели"
+      auditEventStart:
+        oper_description: "Начало отката модели"
+      auditEventSuccess:
+        oper_description: "Модель откачена"
+      auditEventFailure:
+        oper_description: "Ошибка отката модели"
+
     - event-code: "SUMD_AUTH"
-      schema: "vtb"
-      resolvers: []
-      list-resolvers: []
+      schema: "auth_internal"
+      auditEventGeneral:
+        event_type: "Аутентификация"
+        object_type: "Учетная запись"
+        object_status: "AUTH"
+        oper_name: "Запрос на аутентификацию пользователя"
+      auditEventStart:
+        oper_description: "Начало аутентификации"
+      auditEventSuccess:
+        oper_description: "Аутентификация успешна"
+      auditEventFailure:
+        oper_description: "Ошибка аутентификации"
+
   block-settings:
     SUMD_CREATEMODEL: false
     SUMD_REMOVEMODEL: false
