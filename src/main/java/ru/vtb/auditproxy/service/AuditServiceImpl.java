@@ -3,13 +3,11 @@ package ru.vtb.auditproxy.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.vtb.auditproxy.config.AuditEventsProperties;
 import ru.vtb.auditproxy.dto.AuditRequest;
 import ru.vtb.auditproxy.dto.AuditResponse;
 import ru.vtb.auditproxy.exception.AuditSendException;
-import ru.vtb.omni.audit.core.sender.AuditEventSender;
+import ru.vtb.omni.audit.lib.api.template.context.servlet.ServletAuditTemplate;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,55 +16,41 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
 
-    private final AuditEventSender<?> auditEventSender;
-    private final TechFieldsProvider techFieldsProvider;
-    private final AuditEventsProperties auditEventsProperties;
+    private final ServletAuditTemplate auditTemplate;
 
     @Override
     public AuditResponse sendAuditEvent(AuditRequest request) {
-        // 1. Формируем базовую мапу события
-        Map<String, Object> eventMap = new HashMap<>();
+        Map<String, Object> methodParams = new HashMap<>();
         if (request.getAdditionalFields() != null) {
-            eventMap.putAll(request.getAdditionalFields());
+            methodParams.putAll(request.getAdditionalFields());
+        }
+        if (request.getCorrelationId() != null) {
+            methodParams.put("event_correlationId", request.getCorrelationId());
+        }
+        if (request.getInitiator() != null) {
+            methodParams.putAll(request.getInitiator());
         }
 
-        // 2. Добавляем класс события
-        eventMap.put("event_class", request.getEventClass().name());
-
-        // 3. Добавляем технические поля (не перетираем переданные)
-        techFieldsProvider.enrich(eventMap);
-
-        // 4. Устанавливаем временную метку, если не задана
-        if (!eventMap.containsKey("oper_timestamp")) {
-            if (request.getTimestamp() != null) {
-                eventMap.put("oper_timestamp", request.getTimestamp());
-            } else {
-                eventMap.put("oper_timestamp", Instant.now().toString());
-            }
-        }
-
-        // 5. Проверяем, блокирующее ли событие
-        boolean isBlocking = auditEventsProperties.getBlockSettings()
-                .getOrDefault(request.getEventCode(), false);
+        log.debug("Sending audit event via AuditTemplate: eventCode={}, class={}, correlationId={}",
+                request.getEventCode(), request.getEventClass(), request.getCorrelationId());
 
         try {
-            // Отправка события
-            if (isBlocking) {
-                // Для блокирующих событий вызываем синхронно – при ошибке будет исключение
-                String eventId = (String) auditEventSender.sendEvent(eventMap);
-                log.debug("Blocking audit event sent, id: {}", eventId);
-            } else {
-                // Для неблокирующих – вызываем и не ждём, ловим возможные ошибки
-                auditEventSender.sendEvent(eventMap);
-            }
+            Object result = auditTemplate.execute(
+                    request.getEventCode(),
+                    methodParams,
+                    () -> {
+                        log.debug("Audit action executed for eventCode={}, class={}",
+                                request.getEventCode(), request.getEventClass());
+                        return "OK";
+                    }
+            );
+            log.info("Audit event processed successfully: eventCode={}, correlationId={}",
+                    request.getEventCode(), request.getCorrelationId());
+            return new AuditResponse("accepted", "Audit event processed");
         } catch (Exception e) {
-            if (isBlocking) {
-                throw new AuditSendException("Failed to send blocking audit event", e);
-            } else {
-                log.error("Non-blocking audit event send failed", e);
-            }
+            log.error("Failed to send audit event: eventCode={}, correlationId={}",
+                    request.getEventCode(), request.getCorrelationId(), e);
+            throw new AuditSendException("Audit send failed: " + e.getMessage(), e);
         }
-
-        return new AuditResponse("accepted", null);
     }
 }
