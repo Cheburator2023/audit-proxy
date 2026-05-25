@@ -1,19 +1,18 @@
 spring:
-  application:
-    name: audit-proxy-dev
+  config:
+    activate:
+      on-profile: dev
 
-ms:
-  properties:
-    info-system-code: "SUM_BACKEND"
-    info-system-id: "1661"
-
+# Для разработки используем PLAINTEXT и эмулятор
 audit:
   enabled: true
+  develop-mode: true
+  fill-error: true
+
   kafka:
-    bootstrap-servers: omni1-emulator-kafka:9092
-    topic: audit-v2
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:omni1-emulator-kafka:9092}
     security:
-      protocol: PLAINTEXT   # для разработки без SSL
+      protocol: PLAINTEXT
     ssl:
       key-store-location: ""
       key-store-type: ""
@@ -28,148 +27,33 @@ audit:
         default.api.timeout.ms: 30000
         request.timeout.ms: 30000
         delivery.timeout.ms: 60000
-        retries: 10                 # количество повторных отправок при ошибках Kafka
-        retry.backoff.ms: 1000      # задержка между ретраями
+        retries: 10
+        retry.backoff.ms: 1000
         slider.wait.ms: 5000
     properties:
       slider.enable: true
+
   standin-kafka:
     enabled: false
-  blocking:
-    blocking-skip-time: 300000
-  all-block: false
+
+  default-resolver:
+    sub: "emulator"
+    channel: "emulator"
+
   in-memory-skipped-storage:
     enabled: true
     resend-cron: "0 */10 * * * *"
     delay-force-send: 300
+
   circular-buffer:
     enabled: true
     capacity: 10000
-  deployment-context:
-    pod-name-environment: AUDITOMNI_POD_NAME
-    pod-namespace-environment: AUDITOMNI_POD_NAMESPACE
-  default-resolver:
-    sub: "emulator"
-    channel: "emulator"
-  develop-mode: true
+
   health:
     kafka:
       enabled: true
 
 audit-events:
-  auditEventCodeList:
-    - event-code: "SUMD_CREATEMODEL"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Создание модели СУМ"
-        object_type: "Модель"
-        object_status: "CREATE"
-        oper_name: "Запрос на создание модели в СУМ"
-      auditEventStart:
-        oper_description: "Начало создания модели"
-      auditEventSuccess:
-        oper_description: "Модель успешно создана"
-      auditEventFailure:
-        oper_description: "Ошибка создания модели"
-
-    - event-code: "SUMD_REMOVEMODEL"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Перевод в Архив"
-        object_type: "Модель"
-        object_status: "Remove"
-        oper_name: "Запрос на перевод модели в статус Архив"
-      auditEventStart:
-        oper_description: "Начало перевода модели в архив"
-      auditEventSuccess:
-        oper_description: "Модель переведена в архив"
-      auditEventFailure:
-        oper_description: "Ошибка перевода модели в архив"
-
-    - event-code: "SUMD_CANCELMODEL"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Отмена разработки"
-        object_type: "Модель"
-        object_status: "Cancel"
-        oper_name: "Запрос на отмену разработки модели"
-      auditEventStart:
-        oper_description: "Начало отмены разработки модели"
-      auditEventSuccess:
-        oper_description: "Разработка модели отменена"
-      auditEventFailure:
-        oper_description: "Ошибка отмены разработки модели"
-
-    - event-code: "SUMD_UPLOADREPORT"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Выгрузка отчета"
-        object_type: "Модель"
-        object_status: "Upload"
-        oper_name: "Запрос на выгрузку отчета в СУМ"
-      auditEventStart:
-        oper_description: "Начало выгрузки отчета"
-      auditEventSuccess:
-        oper_description: "Отчет успешно выгружен"
-      auditEventFailure:
-        oper_description: "Ошибка выгрузки отчета"
-
-    - event-code: "SUMD_TASKCOMPLETE"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Закрытие задачи"
-        object_type: "Модель"
-        object_status: "Complete"
-        oper_name: "Запрос на закрытие задачи"
-      auditEventStart:
-        oper_description: "Начало закрытия задачи"
-      auditEventSuccess:
-        oper_description: "Задача закрыта"
-      auditEventFailure:
-        oper_description: "Ошибка закрытия задачи"
-
-    - event-code: "SUMD_ROLLBACKMODEL"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Откат модели"
-        object_type: "Модель"
-        object_status: "Rollback"
-        oper_name: "Запрос на откат модели"
-      auditEventStart:
-        oper_description: "Начало отката модели"
-      auditEventSuccess:
-        oper_description: "Модель откачена"
-      auditEventFailure:
-        oper_description: "Ошибка отката модели"
-
-    - event-code: "SUMD_AUTH"
-      schema: "auth_internal"
-      auditEventGeneral:
-        event_type: "Аутентификация"
-        object_type: "Учетная запись"
-        object_status: "AUTH"
-        oper_name: "Запрос на аутентификацию пользователя"
-      auditEventStart:
-        oper_description: "Начало аутентификации"
-      auditEventSuccess:
-        oper_description: "Аутентификация успешна"
-      auditEventFailure:
-        oper_description: "Ошибка аутентификации"
-
-    - event-code: "TEST_EVENT"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Test event"
-        object_type: "Модель"
-        object_status: "CREATE"
-        oper_name: "Тестовое событие"
-      auditEventStart:
-        oper_description: "Начало создания модели"
-      auditEventSuccess:
-        oper_description: "Модель успешно создана"
-      auditEventFailure:
-        oper_description: "Ошибка создания модели"
-
   block-settings:
     SUMD_CREATEMODEL: false
     SUMD_REMOVEMODEL: false
@@ -179,26 +63,8 @@ audit-events:
     SUMD_ROLLBACKMODEL: false
     SUMD_AUTH: false
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,prometheus
-  endpoint:
-    health:
-      show-components: always
-  health:
-    defaults:
-      enabled: false
-    audit:
-      kafka:
-        enabled: true
-
 logging:
   level:
     ru.vtb.omni.audit: DEBUG
-    org.apache.kafka: DEBUG
     ru.vtb.auditproxy: DEBUG
-    ru.vtb.auditproxy.diagnostics: DEBUG
-
-debug: true
+    org.apache.kafka: DEBUG

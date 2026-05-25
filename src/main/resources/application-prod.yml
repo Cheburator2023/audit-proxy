@@ -1,15 +1,113 @@
 spring:
-  application:
-    name: audit-proxy-prod
-
-ms:
-  properties:
-    info-system-code: "SUM_BACKEND"
-    info-system-id: "1661"
+  config:
+    activate:
+      on-profile: prod
 
 audit:
+  enabled: true
+  develop-mode: false
+  fill-error: true
+
+  # Основная Kafka
   kafka:
-    bootstrap-servers: kafka-cluster-prod:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    security:
+      protocol: SSL
+    ssl:
+      key-store-location: ${KAFKA_KEYSTORE_LOCATION}
+      key-store-type: ${KAFKA_KEYSTORE_TYPE:JKS}
+      key-store-password: ${KAFKA_KEYSTORE_PASSWORD}
+      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION}
+      trust-store-type: ${KAFKA_TRUSTSTORE_TYPE:JKS}
+      trust-store-password: ${KAFKA_TRUSTSTORE_PASSWORD}
+      key-password: ${KAFKA_KEY_PASSWORD}
+    producer:
+      properties:
+        max.block.ms: ${KAFKA_MAX_BLOCK_MS:10000}
+        default.api.timeout.ms: ${KAFKA_DEFAULT_API_TIMEOUT_MS:10000}
+        request.timeout.ms: ${KAFKA_REQUEST_TIMEOUT_MS:10000}
+        delivery.timeout.ms: ${KAFKA_DELIVERY_TIMEOUT_MS:20000}
+        retries: ${KAFKA_RETRIES:10}
+        retry.backoff.ms: ${KAFKA_RETRY_BACKOFF_MS:1000}
+        slider.wait.ms: ${KAFKA_SLIDER_WAIT_MS:5000}
+    properties:
+      slider.enable: true
+
+  # Резервная Kafka
   standin-kafka:
     enabled: true
-    bootstrap-servers: kafka-cluster-standin:9092
+    bootstrap-servers: ${STANDIN_KAFKA_BOOTSTRAP_SERVERS}
+    security:
+      protocol: SSL
+    ssl:
+      key-store-location: ${STANDIN_KAFKA_KEYSTORE_LOCATION}
+      key-store-type: ${STANDIN_KAFKA_KEYSTORE_TYPE:JKS}
+      key-store-password: ${STANDIN_KAFKA_KEYSTORE_PASSWORD}
+      trust-store-location: ${STANDIN_KAFKA_TRUSTSTORE_LOCATION}
+      trust-store-type: ${STANDIN_KAFKA_TRUSTSTORE_TYPE:JKS}
+      trust-store-password: ${STANDIN_KAFKA_TRUSTSTORE_PASSWORD}
+      key-password: ${STANDIN_KAFKA_KEY_PASSWORD}
+    producer:
+      properties:
+        max.block.ms: ${STANDIN_KAFKA_MAX_BLOCK_MS:10000}
+        default.api.timeout.ms: ${STANDIN_KAFKA_DEFAULT_API_TIMEOUT_MS:10000}
+        request.timeout.ms: ${STANDIN_KAFKA_REQUEST_TIMEOUT_MS:10000}
+        delivery.timeout.ms: ${STANDIN_KAFKA_DELIVERY_TIMEOUT_MS:20000}
+        retries: ${STANDIN_KAFKA_RETRIES:10}
+        retry.backoff.ms: ${STANDIN_KAFKA_RETRY_BACKOFF_MS:1000}
+        slider.wait.ms: ${STANDIN_KAFKA_SLIDER_WAIT_MS:5000}
+    properties:
+      slider.enable: true
+
+  # Параметры переключения
+  standin-period-min: ${STANDIN_PERIOD_MIN:5}
+  standin-try-count-to-switch: ${STANDIN_TRY_COUNT_TO_SWITCH:2}
+
+  # Буферизация – рекомендуется включить для защиты от потери событий
+  in-memory-skipped-storage:
+    enabled: true
+    resend-cron: "0 */10 * * * *"
+    delay-force-send: 300
+
+  circular-buffer:
+    enabled: true
+    capacity: ${CIRCULAR_BUFFER_CAPACITY:10000}
+
+  # Rate limiter – установить в соответствии с заявленной нагрузкой (пример 50 rps)
+  rps: ${AUDIT_RPS:50}
+
+  # Количество потоков отправки (оптимизировать под нагрузку)
+  thread-send-count: ${AUDIT_THREAD_SEND_COUNT:15}
+
+  # Значения по умолчанию для полей sub/channel (если нет токена – не используется)
+  default-resolver:
+    sub: "unknown"
+    channel: "unknown"
+
+  # Health check
+  health:
+    kafka:
+      enabled: true
+
+audit-events:
+  # В prod можно оставить значения по умолчанию или переопределить через env
+  block-settings:
+    SUMD_CREATEMODEL: ${BLOCK_SUMD_CREATEMODEL:false}
+    SUMD_REMOVEMODEL: ${BLOCK_SUMD_REMOVEMODEL:false}
+    SUMD_CANCELMODEL: ${BLOCK_SUMD_CANCELMODEL:false}
+    SUMD_UPLOADREPORT: ${BLOCK_SUMD_UPLOADREPORT:false}
+    SUMD_TASKCOMPLETE: ${BLOCK_SUMD_TASKCOMPLETE:false}
+    SUMD_ROLLBACKMODEL: ${BLOCK_SUMD_ROLLBACKMODEL:false}
+    SUMD_AUTH: ${BLOCK_SUMD_AUTH:false}
+
+management:
+  health:
+    audit:
+      kafka:
+        enabled: true
+
+logging:
+  level:
+    ru.vtb.omni.audit: ${LOG_LEVEL_AUDIT:WARN}
+    ru.vtb.auditproxy: ${LOG_LEVEL_PROXY:INFO}
+    org.apache.kafka: ${LOG_LEVEL_KAFKA:WARN}
