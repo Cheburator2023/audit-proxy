@@ -111,84 +111,50 @@ audit:
 # Описание типов событий аудита (общее для всех сред)
 audit-events:
   auditEventCodeList:
-    - event-code: "SUMD_CREATEMODEL"
+    # Событие создания модели в СУРМ
+    - event-code: "SUMD_MRMSCREATEMODEL"
       schema: "vtb"
       auditEventGeneral:
-        event_type: "Создание модели СУМ"
+        event_type: "Создание модели"
         object_type: "Модель"
         object_status: "CREATE"
-        oper_name: "Запрос на создание модели в СУМ"
+        oper_name: "Запрос на создание модели в СУРМ"
       auditEventStart:
-        oper_description: "Начало создания модели"
+        oper_description: "Начало создания модели в СУРМ"
       auditEventSuccess:
-        oper_description: "Модель успешно создана"
+        oper_description: "Модель создана в СУРМ"
       auditEventFailure:
-        oper_description: "Ошибка создания модели"
-    - event-code: "SUMD_REMOVEMODEL"
+        oper_description: "Ошибка создания модели в СУРМ"
+
+    # Событие удаления модели (архивация) в СУРМ
+    - event-code: "SUMD_MRMSREMOVEMODEL"
       schema: "vtb"
       auditEventGeneral:
-        event_type: "Перевод в Архив"
+        event_type: "Удаление модели"
         object_type: "Модель"
-        object_status: "Remove"
-        oper_name: "Запрос на перевод модели в статус Архив"
+        object_status: "REMOVE"
+        oper_name: "Запрос на удаление модели в СУРМ"
       auditEventStart:
-        oper_description: "Начало перевода модели в архив"
+        oper_description: "Начало удаления модели"
       auditEventSuccess:
-        oper_description: "Модель переведена в архив"
+        oper_description: "Модель удалена"
       auditEventFailure:
-        oper_description: "Ошибка перевода модели в архив"
-    - event-code: "SUMD_CANCELMODEL"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Отмена разработки"
-        object_type: "Модель"
-        object_status: "Cancel"
-        oper_name: "Запрос на отмену разработки модели"
-      auditEventStart:
-        oper_description: "Начало отмены разработки модели"
-      auditEventSuccess:
-        oper_description: "Разработка модели отменена"
-      auditEventFailure:
-        oper_description: "Ошибка отмены разработки модели"
-    - event-code: "SUMD_UPLOADREPORT"
+        oper_description: "Ошибка при удалении модели"
+
+    # Событие выгрузки отчёта в СУРМ
+    - event-code: "SUMD_MRMSUPLOADREPORT"
       schema: "vtb"
       auditEventGeneral:
         event_type: "Выгрузка отчета"
         object_type: "Модель"
-        object_status: "Upload"
-        oper_name: "Запрос на выгрузку отчета в СУМ"
+        object_status: "UPLOAD"
+        oper_name: "Запрос на выгрузку отчета в СУРМ"
       auditEventStart:
         oper_description: "Начало выгрузки отчета"
       auditEventSuccess:
-        oper_description: "Отчет успешно выгружен"
+        oper_description: "Отчет выгружен"
       auditEventFailure:
         oper_description: "Ошибка выгрузки отчета"
-    - event-code: "SUMD_TASKCOMPLETE"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Закрытие задачи"
-        object_type: "Модель"
-        object_status: "Complete"
-        oper_name: "Запрос на закрытие задачи"
-      auditEventStart:
-        oper_description: "Начало закрытия задачи"
-      auditEventSuccess:
-        oper_description: "Задача закрыта"
-      auditEventFailure:
-        oper_description: "Ошибка закрытия задачи"
-    - event-code: "SUMD_ROLLBACKMODEL"
-      schema: "vtb"
-      auditEventGeneral:
-        event_type: "Откат модели"
-        object_type: "Модель"
-        object_status: "Rollback"
-        oper_name: "Запрос на откат модели"
-      auditEventStart:
-        oper_description: "Начало отката модели"
-      auditEventSuccess:
-        oper_description: "Модель откачена"
-      auditEventFailure:
-        oper_description: "Ошибка отката модели"
     - event-code: "SUMD_AUTH"
       schema: "auth_internal"
       auditEventGeneral:
@@ -204,12 +170,9 @@ audit-events:
         oper_description: "Ошибка аутентификации"
 
   block-settings:
-    SUMD_CREATEMODEL: ${BLOCK_SUMD_CREATEMODEL:false}
-    SUMD_REMOVEMODEL: ${BLOCK_SUMD_REMOVEMODEL:false}
-    SUMD_CANCELMODEL: ${BLOCK_SUMD_CANCELMODEL:false}
-    SUMD_UPLOADREPORT: ${BLOCK_SUMD_UPLOADREPORT:false}
-    SUMD_TASKCOMPLETE: ${BLOCK_SUMD_TASKCOMPLETE:false}
-    SUMD_ROLLBACKMODEL: ${BLOCK_SUMD_ROLLBACKMODEL:false}
+    SUMD_MRMSCREATEMODEL: ${BLOCK_SUMD_MRMSCREATEMODEL:false}
+    SUMD_MRMSREMOVEMODEL: ${BLOCK_SUMD_MRMSREMOVEMODEL:false}
+    SUMD_MRMSUPLOADREPORT: ${BLOCK_SUMD_MRMSUPLOADREPORT:false}
     SUMD_AUTH: ${BLOCK_SUMD_AUTH:false}
 
 # Actuator и метрики

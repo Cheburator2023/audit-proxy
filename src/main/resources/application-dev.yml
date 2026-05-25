@@ -55,12 +55,9 @@ audit:
 
 audit-events:
   block-settings:
-    SUMD_CREATEMODEL: false
-    SUMD_REMOVEMODEL: false
-    SUMD_CANCELMODEL: false
-    SUMD_UPLOADREPORT: false
-    SUMD_TASKCOMPLETE: false
-    SUMD_ROLLBACKMODEL: false
+    SUMD_MRMSCREATEMODEL: false
+    SUMD_MRMSREMOVEMODEL: false
+    SUMD_MRMSUPLOADREPORT: false
     SUMD_AUTH: false
 
 logging:
