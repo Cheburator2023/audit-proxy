@@ -55,8 +55,13 @@ public class AuditServiceImpl implements AuditService {
         Map<String, Object> event = new HashMap<>();
 
         // ---- обязательные поля ----
+        // Уникальный идентификатор события (id)
+        String eventId = UUID.randomUUID().toString();
+        event.put(FieldsConstant.ID_FIELD_NAME, eventId);
+
         event.put(FieldsConstant.EVENT_CODE_FIELD_NAME, request.getEventCode());
-        event.put(FieldsConstant.EVENT_CLASS_FIELD_NAME, AudLibEventClass.valueOf(request.getEventClass().name()));
+        AudLibEventClass audLibEventClass = AudLibEventClass.valueOf(request.getEventClass().name());
+        event.put(FieldsConstant.EVENT_CLASS_FIELD_NAME, audLibEventClass);
 
         // timestamp – ISO 8601 с часовым поясом
         ZonedDateTime timestamp = request.getTimestamp() != null
@@ -95,8 +100,36 @@ public class AuditServiceImpl implements AuditService {
         // ---- статические поля из YAML (в зависимости от класса события) ----
         addStaticFields(event, request.getEventCode(), request.getEventClass());
 
+        // ---- oper_resultStatus согласно документации ----
+        String resultStatus;
+        switch (request.getEventClass()) {
+            case START:
+                resultStatus = "NULL";
+                break;
+            case SUCCESS:
+                resultStatus = "SUCCESS";
+                break;
+            case FAILURE:
+                resultStatus = "FAILURE";
+                break;
+            default:
+                resultStatus = null;
+        }
+        if (resultStatus != null) {
+            event.put("oper_resultStatus", resultStatus);
+        }
+
         // ---- дополнительные параметры от основного приложения ----
         if (request.getAdditionalFields() != null && !request.getAdditionalFields().isEmpty()) {
+            // Для FAILURE обогащаем oper_description текстом ошибки
+            if (request.getEventClass() == ru.vtb.auditproxy.dto.EventClass.FAILURE) {
+                String errorMessage = (String) request.getAdditionalFields().get("errorMessage");
+                if (errorMessage != null && !errorMessage.isEmpty()) {
+                    String currentDesc = (String) event.get("oper_description");
+                    String enrichedDesc = (currentDesc != null ? currentDesc + " : " + errorMessage : errorMessage);
+                    event.put("oper_description", enrichedDesc);
+                }
+            }
             event.put("additionalParams", request.getAdditionalFields());
         }
 
