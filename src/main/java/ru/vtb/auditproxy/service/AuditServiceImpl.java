@@ -1,5 +1,8 @@
 package ru.vtb.auditproxy.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,11 @@ public class AuditServiceImpl implements AuditService {
     private final AuditLibProperties auditLibProperties;
     private final AuditMsProperties auditMsProperties;
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .enable(SerializationFeature.INDENT_OUTPUT);
+
     @Override
     public AuditResponse sendAuditEvent(AuditRequest request) {
         log.debug("Building audit event: eventCode={}, eventClass={}, correlationId={}",
@@ -38,15 +46,27 @@ public class AuditServiceImpl implements AuditService {
 
         Map<String, Object> auditEvent = buildAuditEvent(request);
 
+        // --- Логирование содержимого сообщения перед отправкой ---
+        if (log.isDebugEnabled()) {
+            try {
+                String eventJson = OBJECT_MAPPER.writeValueAsString(auditEvent);
+                log.debug("Audit event payload (JSON): {}", eventJson);
+            } catch (JsonProcessingException e) {
+                log.warn("Failed to serialize audit event to JSON for logging", e);
+                // В случае ошибки сериализации выводим как есть
+                log.debug("Audit event payload (raw): {}", auditEvent);
+            }
+        }
+
         try {
-            // Асинхронная отправка – не блокируем ответ сайдкара
             auditEventSender.sendEvent(auditEvent, true);
             log.info("Audit event sent successfully: eventCode={}, correlationId={}",
                     request.getEventCode(), request.getCorrelationId());
             return new AuditResponse("accepted", "Audit event processed");
         } catch (Exception e) {
-            log.error("Failed to send audit event: eventCode={}, correlationId={}",
-                    request.getEventCode(), request.getCorrelationId(), e);
+            // Дополнительное логирование сообщения при ошибке
+            log.error("Failed to send audit event: eventCode={}, correlationId={}, eventPayload={}",
+                    request.getEventCode(), request.getCorrelationId(), auditEvent, e);
             throw new AuditSendException("Audit send failed: " + e.getMessage(), e);
         }
     }
