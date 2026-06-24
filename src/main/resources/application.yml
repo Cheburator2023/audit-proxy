@@ -231,6 +231,20 @@ audit-events:
         oper_description: "Отчет выгружен"
       auditEventFailure:
         oper_description: "Ошибка выгрузки отчета"
+    # Событие редактирования модели в СУРМ
+    - event-code: "SUMD_MRMSEDITMODEL"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Редактирование модели"
+        object_type: "Модель"
+        object_status: "CHANGE"
+        oper_name: "Запрос на редактирование модели"
+      auditEventStart:
+        oper_description: "Начало редактирования модели"
+      auditEventSuccess:
+        oper_description: "Данные сохранились"
+      auditEventFailure:
+        oper_description: "Ошибка сохранения данных"
     - event-code: "SUMD_AUTH"
       schema: "auth_internal"
       auditEventGeneral:
@@ -255,6 +269,7 @@ audit-events:
     SUMD_MRMSCREATEMODEL: ${BLOCK_SUMD_MRMSCREATEMODEL:false}
     SUMD_MRMSREMOVEMODEL: ${BLOCK_SUMD_MRMSREMOVEMODEL:false}
     SUMD_MRMSUPLOADREPORT: ${BLOCK_SUMD_MRMSUPLOADREPORT:false}
+    SUMD_MRMSEDITMODEL: ${BLOCK_SUMD_MRMSEDITMODEL:false}
     SUMD_AUTH: ${BLOCK_SUMD_AUTH:false}
 
 # Actuator и метрики
