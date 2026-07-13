@@ -111,6 +111,7 @@ audit:
 # Описание типов событий аудита (общее для всех сред)
 audit-events:
   auditEventCodeList:
+      # Событие создания модели в СУМ
     - event-code: "SUMD_CREATEMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -124,6 +125,7 @@ audit-events:
         oper_description: "Модель успешно создана"
       auditEventFailure:
         oper_description: "Ошибка создания модели"
+      # Событие удаления модели в СУМ
     - event-code: "SUMD_REMOVEMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -137,6 +139,7 @@ audit-events:
         oper_description: "Модель переведена в архив"
       auditEventFailure:
         oper_description: "Ошибка перевода модели в архив"
+      # Событие отмена разработки модели в СУРМ
     - event-code: "SUMD_CANCELMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -150,6 +153,7 @@ audit-events:
         oper_description: "Разработка модели отменена"
       auditEventFailure:
         oper_description: "Ошибка отмены разработки модели"
+      # Событие выгрузки отчета в СУРМ
     - event-code: "SUMD_UPLOADREPORT"
       schema: "vtb"
       auditEventGeneral:
@@ -163,6 +167,7 @@ audit-events:
         oper_description: "Отчет успешно выгружен"
       auditEventFailure:
         oper_description: "Ошибка выгрузки отчета"
+      # Событие закрытия задачи в СУРМ
     - event-code: "SUMD_TASKCOMPLETE"
       schema: "vtb"
       auditEventGeneral:
@@ -176,6 +181,7 @@ audit-events:
         oper_description: "Задача закрыта"
       auditEventFailure:
         oper_description: "Ошибка закрытия задачи"
+      # Событие откат модели в СУРМ
     - event-code: "SUMD_ROLLBACKMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -203,7 +209,7 @@ audit-events:
         oper_description: "Модель создана в СУРМ"
       auditEventFailure:
         oper_description: "Ошибка создания модели в СУРМ"
-    # Событие удаления модели (архивация) в СУРМ
+      # Событие удаления модели (архивация) в СУРМ
     - event-code: "SUMD_MRMSREMOVEMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -217,7 +223,7 @@ audit-events:
         oper_description: "Модель удалена"
       auditEventFailure:
         oper_description: "Ошибка при удалении модели"
-    # Событие выгрузки отчёта в СУРМ
+      # Событие выгрузки отчёта в СУРМ
     - event-code: "SUMD_MRMSUPLOADREPORT"
       schema: "vtb"
       auditEventGeneral:
@@ -231,7 +237,7 @@ audit-events:
         oper_description: "Отчет выгружен"
       auditEventFailure:
         oper_description: "Ошибка выгрузки отчета"
-    # Событие редактирования модели в СУРМ
+      # Событие редактирования модели в СУРМ
     - event-code: "SUMD_MRMSEDITMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -245,6 +251,7 @@ audit-events:
         oper_description: "Данные сохранились"
       auditEventFailure:
         oper_description: "Ошибка сохранения данных"
+      # Событие авторизации пользователя
     - event-code: "SUMD_AUTH"
       schema: "auth_internal"
       auditEventGeneral:
@@ -258,7 +265,86 @@ audit-events:
         oper_description: "Аутентификация успешна"
       auditEventFailure:
         oper_description: "Ошибка аутентификации"
+      # Событие создания анкеты в СА
+    - event-code: "SUMD_CREATEANKETA"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Создание анкеты"
+        object_type: "Анкета"
+        oper_name: "Запрос на создание анкеты"
+      auditEventStart:
+        oper_description: "Открыта страница создания анкеты"
+      auditEventSuccess:
+        oper_description: "Анкета успешно создана"
+      auditEventFailure:
+        oper_description: "Ошибка создания анкеты"
+      # Событие сохранения анкеты в СА
+    - event-code: "SUMD_SAVEANKETA"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Сохранение данных"
+        object_type: "Анкета"
+        oper_name: "Сохранение данных"
+      auditEventStart:
+        oper_description: "Начало сохранения данных"
+      auditEventSuccess:
+        oper_description: "Данные сохранены"
+      auditEventFailure:
+        oper_description: "Ошибка сохранения данных"
+      # Событие удаления анкеты в СА
+    - event-code: "SUMD_DELETEANKETA"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Удаление анкеты"
+        object_type: "Анкета"
+        oper_name: "Запрос на удаление анкеты"
+      auditEventStart:
+        oper_description: "Открылось окно подтверждения удаления анкеты"
+      auditEventSuccess:
+        oper_description: "Анкета удалена"
+      auditEventFailure:
+        oper_description: "Ошибка удаления анкеты"
+      # Событие блокировки анкеты в СА
+    - event-code: "SUMD_HOLDANKETA"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Блокировка анкеты"
+        object_type: "Анкета"
+        oper_name: "Запрос на блокировку анкеты"
+      auditEventStart:
+        oper_description: "Начало блокировки анкеты"
+      auditEventSuccess:
+        oper_description: "Анкета утверждена"
+      auditEventFailure:
+        oper_description: "Ошибка блокировки анкеты"
+      # Событие подтверждения завершения блока в СА
+    - event-code: "SUMD_APPROVE"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Подтверждение завершения заполнения блока"
+        object_type: "Анкета"
+        oper_name: "Запрос на завершение заполнения блока"
+      auditEventStart:
+        oper_description: "Начало подтверждения завершения блока"
+      auditEventSuccess:
+        oper_description: "Подтверждено завершение заполнения блока анкеты"
+      auditEventFailure:
+        oper_description: "Ошибка при подтверждении завершения блока анкеты"
+      # Событие выгрузки списка анкет в СА
+    - event-code: "SUMD_EXPORT"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Выгрузка списка анкет"
+        object_type: "Анкета"
+        oper_name: "Запрос на выгрузку анкет"
+      auditEventStart:
+        oper_description: "Начало выгрузки анкет"
+      auditEventSuccess:
+        oper_description: "Список анкет выгружен"
+      auditEventFailure:
+        oper_description: "Ошибка выгрузки списка анкет"
 
+  # Настройки блокировки для всех событий (по умолчанию false – неблокирующие)
   block-settings:
     SUMD_CREATEMODEL: ${BLOCK_SUMD_CREATEMODEL:false}
     SUMD_REMOVEMODEL: ${BLOCK_SUMD_REMOVEMODEL:false}
@@ -271,6 +357,12 @@ audit-events:
     SUMD_MRMSUPLOADREPORT: ${BLOCK_SUMD_MRMSUPLOADREPORT:false}
     SUMD_MRMSEDITMODEL: ${BLOCK_SUMD_MRMSEDITMODEL:false}
     SUMD_AUTH: ${BLOCK_SUMD_AUTH:false}
+    SUMD_CREATEANKETA: ${BLOCK_SUMD_CREATEANKETA:false}
+    SUMD_SAVEANKETA: ${BLOCK_SUMD_SAVEANKETA:false}
+    SUMD_DELETEANKETA: ${BLOCK_SUMD_DELETEANKETA:false}
+    SUMD_HOLDANKETA: ${BLOCK_SUMD_HOLDANKETA:false}
+    SUMD_APPROVE: ${BLOCK_SUMD_APPROVE:false}
+    SUMD_EXPORT: ${BLOCK_SUMD_EXPORT:false}
 
 # Actuator и метрики
 management:
