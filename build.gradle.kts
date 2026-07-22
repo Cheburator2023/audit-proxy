@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "ru.vtb"
-version = "0.0.7-SNAPSHOT"
+version = "0.0.8-SNAPSHOT"
 description = "audit-proxy"
 
 java {
@@ -77,5 +77,5 @@ tasks.withType<Test> {
 }
 
 tasks.withType<BootJar> {
-    archiveFileName.set("audit-sidecar-v2.0.4.jar")
+    archiveFileName.set("audit-sidecar-v2.0.5.jar")
 }
