@@ -77,5 +77,5 @@ tasks.withType<Test> {
 }
 
 tasks.withType<BootJar> {
-    archiveFileName.set("audit-sidecar-v2.0.3-test.jar")
+    archiveFileName.set("audit-sidecar-v2.0.4.jar")
 }
