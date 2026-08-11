@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.Schema;
 import org.springframework.stereotype.Service;
 import ru.vtb.auditproxy.dto.AuditRequest;
 import ru.vtb.auditproxy.dto.AuditResponse;
 import ru.vtb.auditproxy.exception.AuditSendException;
+import ru.vtb.omni.audit.core.avro.SchemaRepository;
 import ru.vtb.omni.audit.core.properties.AuditLibProperties;
 import ru.vtb.omni.audit.core.properties.AuditMsProperties;
 import ru.vtb.omni.audit.core.sender.AuditEventSender;
@@ -17,6 +19,7 @@ import ru.vtb.omni.audit.lib.api.enums.AudLibEventClass;
 import ru.vtb.omni.audit.lib.api.event.AuditEventCode;
 import ru.vtb.omni.audit.lib.config.AuditEventDescriptionObject;
 
+import java.lang.reflect.Field;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,6 +36,7 @@ public class AuditServiceImpl implements AuditService {
     private final AuditEventDescriptionObject auditEventDescriptionObject;
     private final AuditLibProperties auditLibProperties;
     private final AuditMsProperties auditMsProperties;
+    private final SchemaRepository schemaRepository;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .findAndRegisterModules()
@@ -95,10 +99,16 @@ public class AuditServiceImpl implements AuditService {
                 : UUID.randomUUID().toString();
         event.put(FieldsConstant.CORRELATION_ID_FIELD_NAME, correlationId);
 
-        // схема и версия – берём схему из конфигурации события, версию фиксируем "1"
+        // ---- схема и версия ----
         String schema = getSchemaForEventCode(request.getEventCode());
         event.put(FieldsConstant.SCHEMA_TYPE_FIELD_NAME, schema);
-        event.put(FieldsConstant.SCHEMA_VERSION_FIELD_NAME, "1");
+
+        Integer schemaVersion = getLatestSchemaVersion(schema);
+        if (schemaVersion == null) {
+            log.warn("Schema version not found for type '{}', using fallback version 1", schema);
+            schemaVersion = 1;
+        }
+        event.put(FieldsConstant.SCHEMA_VERSION_FIELD_NAME, schemaVersion.toString());
 
         // ---- технические поля (из конфигурации и окружения) ----
         event.put(FieldsConstant.INFO_SYSTEM_CODE_FIELD_NAME, auditMsProperties.getInfoSystemCode());
@@ -153,6 +163,7 @@ public class AuditServiceImpl implements AuditService {
             event.put("additionalParams", request.getAdditionalFields());
         }
 
+        log.debug("Built audit event with schema '{}', version '{}'", schema, schemaVersion);
         return event;
     }
 
@@ -191,5 +202,28 @@ public class AuditServiceImpl implements AuditService {
                         case FAILURE -> ec.getAuditEventFailure().forEach(event::putIfAbsent);
                     }
                 });
+    }
+
+    /**
+     * Получение актуальной версии схемы из SchemaRepository через рефлексию.
+     *
+     * @param schemaType тип схемы (например, "vtb", "auth_internal")
+     * @return номер последней версии или null, если схема не найдена или произошла ошибка
+     */
+    private Integer getLatestSchemaVersion(String schemaType) {
+        try {
+            Field schemasField = schemaRepository.getClass().getDeclaredField("schemas");
+            schemasField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, Map<Integer, Schema>> schemasMap =
+                    (Map<String, Map<Integer, Schema>>) schemasField.get(schemaRepository);
+            Map<Integer, Schema> versionMap = schemasMap.get(schemaType);
+            if (versionMap != null && !versionMap.isEmpty()) {
+                return versionMap.keySet().stream().max(Integer::compareTo).orElse(null);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
+            log.warn("Failed to retrieve latest schema version via reflection for type '{}'", schemaType, e);
+        }
+        return null;
     }
 }
