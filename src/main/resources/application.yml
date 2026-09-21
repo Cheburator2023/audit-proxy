@@ -277,7 +277,7 @@ audit-events:
       auditEventSuccess:
         oper_description: "Анкета успешно создана"
       auditEventFailure:
-        oper_description: "Ошибка создания анкеты"
+        oper_description: "Ошибка открытия страницы создания анкеты"
       # Событие сохранения анкеты в СА
     - event-code: "SUMD_SAVEANKETA"
       schema: "vtb"
@@ -299,24 +299,24 @@ audit-events:
         object_type: "Анкета"
         oper_name: "Запрос на удаление анкеты"
       auditEventStart:
-        oper_description: "Открылось окно подтверждения удаления анкеты"
+        oper_description: "Начало удаления анкеты"
       auditEventSuccess:
-        oper_description: "Анкета удалена"
+        oper_description: "Открылось окно подтверждения удаления анкеты"
       auditEventFailure:
-        oper_description: "Ошибка удаления анкеты"
+        oper_description: "Ошибка запроса удаления анкеты"
       # Событие блокировки анкеты в СА
     - event-code: "SUMD_HOLDANKETA"
       schema: "vtb"
       auditEventGeneral:
-        event_type: "Блокировка анкеты"
+        event_type: "Утверждение анкеты"
         object_type: "Анкета"
         oper_name: "Запрос на блокировку анкеты"
       auditEventStart:
-        oper_description: "Начало блокировки анкеты"
+        oper_description: "Начало утверждения анкеты"
       auditEventSuccess:
         oper_description: "Анкета утверждена"
       auditEventFailure:
-        oper_description: "Ошибка блокировки анкеты"
+        oper_description: "Ошибка при утверждении анкеты"
     # Событие "Подтверждение завершения заполнения анкеты"
     - event-code: "SUMD_ANKETAAPPROVE"
       schema: "vtb"
@@ -330,6 +330,19 @@ audit-events:
         oper_description: "Подтверждено завершение заполнения анкеты"
       auditEventFailure:
         oper_description: "Ошибка при подтверждении завершения анкеты"
+    # Событие "Подтверждение завершения заполнения блока"
+    - event-code: "SUMD_BLOCKAPPROVE"
+      schema: "vtb"
+      auditEventGeneral:
+        event_type: "Подтверждение завершения заполнения блока"
+        object_type: "Анкета"
+        oper_name: "Запрос на завершение заполнения блока"
+      auditEventStart:
+        oper_description: "Начало подтверждения завершения блока"
+      auditEventSuccess:
+        oper_description: "Подтверждено завершение заполнения блока анкеты"
+      auditEventFailure:
+        oper_description: "Ошибка при подтверждении завершения блока анкеты"
     # Событие "Экспорт списка анкет"
     - event-code: "SUMD_EXPORTLISTANKET"
       schema: "vtb"
@@ -343,7 +356,7 @@ audit-events:
         oper_description: "Список анкет выгружен"
       auditEventFailure:
         oper_description: "Ошибка выгрузки списка анкет"
-    # Событие "Экспорт анкеты" (для будущего использования)
+    # Событие "Экспорт анкеты"
     - event-code: "SUMD_EXPORTANKETA"
       schema: "vtb"
       auditEventGeneral:
