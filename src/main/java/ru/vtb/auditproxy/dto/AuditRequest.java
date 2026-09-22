@@ -23,6 +23,22 @@ public class AuditRequest {
 
     private Map<String, Object> additionalFields;
 
+    /**
+     * IP-адрес системы, получившей запрос (context_recipientIp).
+     * Извлекается сайдкаром из HttpServletRequest::getLocalAddr.
+     */
+    private String recipientIp;
+
+    /**
+     * Trace ID из заголовка W3C traceparent (позиция 2).
+     */
+    private String traceId;
+
+    /**
+     * Span ID из заголовка W3C traceparent (позиция 3).
+     */
+    private String spanId;
+
     // Явные геттеры/сеттеры для надёжности
     public String getEventCode() {
         return eventCode;
@@ -70,5 +86,29 @@ public class AuditRequest {
 
     public void setAdditionalFields(Map<String, Object> additionalFields) {
         this.additionalFields = additionalFields;
+    }
+
+    public String getRecipientIp() {
+        return recipientIp;
+    }
+
+    public void setRecipientIp(String recipientIp) {
+        this.recipientIp = recipientIp;
+    }
+
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
+
+    public String getSpanId() {
+        return spanId;
+    }
+
+    public void setSpanId(String spanId) {
+        this.spanId = spanId;
     }
 }

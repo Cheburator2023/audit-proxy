@@ -7,7 +7,7 @@ server:
 
 ms:
   properties:
-    info-system-code: ${MS_INFO_SYSTEM_CODE:SUM_BACKEND}
+    info-system-code: ${MS_INFO_SYSTEM_CODE:SUMD}
     info-system-id: ${MS_INFO_SYSTEM_ID:1661}
     appName: ${spring.application.name}
 
