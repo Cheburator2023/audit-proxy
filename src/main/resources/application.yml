@@ -1,6 +1,8 @@
 spring:
   application:
     name: audit-proxy
+  main:
+    allow-bean-definition-overriding: true
 
 server:
   port: ${SERVER_PORT:8081}
@@ -14,7 +16,7 @@ ms:
 audit:
   enabled: ${AUDIT_ENABLED:true}
   develop-mode: ${AUDIT_DEVELOP_MODE:false}
-  send-error-in-additional-param: ${AUDIT_SEND_ERROR_IN_ADDITIONAL_PARAM:false}
+  send-error-in-additional-param: ${AUDIT_SEND_ERROR_IN_ADDITIONAL_PARAM:true}
   fill-error: ${AUDIT_FILL_ERROR:true}      # для записи ошибок в oper_description
 
   # Настройки основной Kafka
