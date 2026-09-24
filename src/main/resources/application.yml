@@ -124,9 +124,9 @@ audit-events:
       auditEventStart:
         oper_description: "Начало создания модели"
       auditEventSuccess:
-        oper_description: "Модель успешно создана"
+        oper_description: "Модель [{model}] успешно создана пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка создания модели"
+        oper_description: "Ошибка создания модели пользователем [{staff_id}]: {error_message}"
       # Событие удаления модели в СУМ
     - event-code: "SUMD_REMOVEMODEL"
       schema: "vtb"
@@ -138,10 +138,10 @@ audit-events:
       auditEventStart:
         oper_description: "Начало перевода модели в архив"
       auditEventSuccess:
-        oper_description: "Модель переведена в архив"
+        oper_description: "Модель [{model}] переведена в архив пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка перевода модели в архив"
-      # Событие отмена разработки модели в СУРМ
+        oper_description: "Ошибка перевода модели [{model}] в архив пользователем [{staff_id}]: {error_message}"
+      # Событие отмена разработки модели в СУМ
     - event-code: "SUMD_CANCELMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -152,10 +152,10 @@ audit-events:
       auditEventStart:
         oper_description: "Начало отмены разработки модели"
       auditEventSuccess:
-        oper_description: "Разработка модели отменена"
+        oper_description: "Разработка модели [{model}] отменена пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка отмены разработки модели"
-      # Событие выгрузки отчета в СУРМ
+        oper_description: "Ошибка отмены разработки модели [{model}] пользователем [{staff_id}]: {error_message}"
+      # Событие выгрузки отчета в СУМ
     - event-code: "SUMD_UPLOADREPORT"
       schema: "vtb"
       auditEventGeneral:
@@ -166,10 +166,10 @@ audit-events:
       auditEventStart:
         oper_description: "Начало выгрузки отчета"
       auditEventSuccess:
-        oper_description: "Отчет успешно выгружен"
+        oper_description: "Отчет [{report}] успешно выгружен пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка выгрузки отчета"
-      # Событие закрытия задачи в СУРМ
+        oper_description: "Ошибка выгрузки отчета [{report}] пользователем [{staff_id}]: {error_message}"
+      # Событие закрытия задачи в СУМ
     - event-code: "SUMD_TASKCOMPLETE"
       schema: "vtb"
       auditEventGeneral:
@@ -180,10 +180,10 @@ audit-events:
       auditEventStart:
         oper_description: "Начало закрытия задачи"
       auditEventSuccess:
-        oper_description: "Задача закрыта"
+        oper_description: "Задача [{task_id}] успешно закрыта пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка закрытия задачи"
-      # Событие откат модели в СУРМ
+        oper_description: "Ошибка закрытия задачи [{task_id}] пользователем [{staff_id}]: {error_message}"
+      # Событие откат модели в СУМ
     - event-code: "SUMD_ROLLBACKMODEL"
       schema: "vtb"
       auditEventGeneral:
@@ -194,9 +194,9 @@ audit-events:
       auditEventStart:
         oper_description: "Начало отката модели"
       auditEventSuccess:
-        oper_description: "Модель откачена"
+        oper_description: "Модель [{model}] успешно откачена пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка отката модели"
+        oper_description: "Ошибка отката модели [{model}] пользователем [{staff_id}]: {error_message}"
       # Событие создания модели в СУРМ
     - event-code: "SUMD_MRMSCREATEMODEL"
       schema: "vtb"
@@ -264,9 +264,9 @@ audit-events:
       auditEventStart:
         oper_description: "Начало аутентификации"
       auditEventSuccess:
-        oper_description: "Аутентификация успешна"
+        oper_description: "Успешная аутентификация пользователя [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка аутентификации"
+        oper_description: "Ошибка аутентификации пользователя [{staff_id}]: {error_message}"
       # Событие создания анкеты в СА
     - event-code: "SUMD_CREATEANKETA"
       schema: "vtb"

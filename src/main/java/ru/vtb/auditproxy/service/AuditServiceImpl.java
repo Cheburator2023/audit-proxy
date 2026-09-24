@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import ru.vtb.auditproxy.dto.AuditRequest;
 import ru.vtb.auditproxy.dto.AuditResponse;
 import ru.vtb.auditproxy.dto.EventClass;
@@ -15,12 +16,12 @@ import ru.vtb.omni.audit.core.properties.AuditMsProperties;
 import ru.vtb.omni.audit.core.sender.AuditEventSender;
 import ru.vtb.omni.audit.lib.api.FieldsConstant;
 import ru.vtb.omni.audit.lib.api.enums.AudLibEventClass;
-import ru.vtb.omni.audit.lib.api.event.AuditEventCode;
 import ru.vtb.omni.audit.lib.config.AuditEventDescriptionObject;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +33,8 @@ public class AuditServiceImpl implements AuditService {
 
     private static final String FIELD_CONTEXT_RECIPIENT_IP = "context_recipientIp";
     private static final String FIELD_ADDITIONAL_PARAMS = "additionalParams";
+    private static final String FALLBACK_TRACE_ID_KEY = "traceId";
+    private static final String FALLBACK_SPAN_ID_KEY = "spanId";
 
     private final AuditEventSender<Object> auditEventSender;
     private final AuditEventDescriptionObject auditEventDescriptionObject;
@@ -111,8 +114,11 @@ public class AuditServiceImpl implements AuditService {
         // ---- технические поля ----
         event.put(FieldsConstant.INFO_SYSTEM_CODE_FIELD_NAME, auditMsProperties.getInfoSystemCode());
         event.put(FieldsConstant.INFO_SYSTEM_ID_FIELD_NAME, auditMsProperties.getInfoSystemId());
-        event.put(FieldsConstant.NAMESPACE_FIELD_NAME, getPodNamespace());
-        event.put(FieldsConstant.POD_NAME_FIELD_NAME, getPodName());
+
+        // context_namespace / context_podName: записываются ТОЛЬКО при непустом значении.
+        // Согласно 43_1_СС_Аудит… «Если не используется — не заполняется».
+        putIfNotNull(event, FieldsConstant.NAMESPACE_FIELD_NAME, getPodNamespace());
+        putIfNotNull(event, FieldsConstant.POD_NAME_FIELD_NAME, getPodName());
 
         // ---- инициатор события ----
         initiatorFieldMapper.mapInitiator(request, event, auditLibProperties);
@@ -129,20 +135,28 @@ public class AuditServiceImpl implements AuditService {
         event.put("oper_resultStatus", resolveResultStatus(request.getEventClass()));
 
         // ---- additionalFields: кодирование + обогащение oper_description ----
-        if (request.getAdditionalFields() != null && !request.getAdditionalFields().isEmpty()) {
-            Map<String, Object> additionalFields = request.getAdditionalFields();
+        Map<String, Object> additionalFields = request.getAdditionalFields() != null
+                ? request.getAdditionalFields()
+                : Collections.emptyMap();
 
-            // Явное переопределение oper_description (если пришло от поставщика)
-            Object operDescription = additionalFields.get(FieldsConstant.OPER_DESCRIPTION_FIELD_NAME);
-            if (operDescription != null && !operDescription.toString().isEmpty()) {
-                event.put(FieldsConstant.OPER_DESCRIPTION_FIELD_NAME, operDescription);
-            }
+        // Явное переопределение oper_description (если пришло от поставщика)
+        Object operDescription = additionalFields.get(FieldsConstant.OPER_DESCRIPTION_FIELD_NAME);
+        if (operDescription != null && !operDescription.toString().isEmpty()) {
+            event.put(FieldsConstant.OPER_DESCRIPTION_FIELD_NAME, operDescription);
+        }
 
-            // Обогащение oper_description по шаблонам 43_1_СС_Аудит...
-            errorDescriptionEnricher.enrich(event, request, additionalFields);
+        // Обогащение oper_description:
+        //  - подстановка {placeholders} в шаблон из YAML;
+        //  - fallback для FAILURE: добавление errorMessage в конец.
+        // Вызывается ВСЕГДА — даже если additionalFields пустой, потому что
+        // плейсхолдер {staff_id} может быть подставлен из event.staff_id.
+        errorDescriptionEnricher.enrich(event, request, additionalFields);
 
-            // Кодируем additionalFields в Map<String,String> для Avro (additionalParams)
-            Map<String, String> encoded = additionalParamsEncoder.encode(additionalFields);
+        // additionalParams пишем только если есть данные.
+        // traceId/spanId исключаются — они уже в context_traceId/context_spanId.
+        if (!additionalFields.isEmpty()) {
+            Map<String, Object> filtered = filterAdditionalFields(additionalFields, request);
+            Map<String, String> encoded = additionalParamsEncoder.encode(filtered);
             event.put(FIELD_ADDITIONAL_PARAMS, encoded);
         }
 
@@ -152,15 +166,35 @@ public class AuditServiceImpl implements AuditService {
     }
 
     /**
+     * Исключает traceId/spanId из additionalParams, если они уже переданы
+     * через заголовок traceparent (context_traceId/context_spanId).
+     */
+    private Map<String, Object> filterAdditionalFields(Map<String, Object> source, AuditRequest request) {
+        if (!StringUtils.hasText(request.getTraceId()) && !StringUtils.hasText(request.getSpanId())) {
+            return source;
+        }
+        Map<String, Object> result = new HashMap<>(source);
+        if (StringUtils.hasText(request.getTraceId())) {
+            result.remove(FALLBACK_TRACE_ID_KEY);
+        }
+        if (StringUtils.hasText(request.getSpanId())) {
+            result.remove(FALLBACK_SPAN_ID_KEY);
+        }
+        return result;
+    }
+
+    /**
      * TraceId: приоритет — заголовок traceparent, fallback — additionalFields.traceId.
      */
     private String resolveTraceId(AuditRequest request) {
-        if (request.getTraceId() != null && !request.getTraceId().isEmpty()) {
+        if (StringUtils.hasText(request.getTraceId())) {
             return request.getTraceId();
         }
         if (request.getAdditionalFields() != null) {
-            Object fallback = request.getAdditionalFields().get("traceId");
-            return fallback != null ? fallback.toString() : null;
+            Object fallback = request.getAdditionalFields().get(FALLBACK_TRACE_ID_KEY);
+            if (fallback != null && !fallback.toString().isEmpty()) {
+                return fallback.toString();
+            }
         }
         return null;
     }
@@ -169,12 +203,14 @@ public class AuditServiceImpl implements AuditService {
      * SpanId: приоритет — заголовок traceparent, fallback — additionalFields.spanId.
      */
     private String resolveSpanId(AuditRequest request) {
-        if (request.getSpanId() != null && !request.getSpanId().isEmpty()) {
+        if (StringUtils.hasText(request.getSpanId())) {
             return request.getSpanId();
         }
         if (request.getAdditionalFields() != null) {
-            Object fallback = request.getAdditionalFields().get("spanId");
-            return fallback != null ? fallback.toString() : null;
+            Object fallback = request.getAdditionalFields().get(FALLBACK_SPAN_ID_KEY);
+            if (fallback != null && !fallback.toString().isEmpty()) {
+                return fallback.toString();
+            }
         }
         return null;
     }
@@ -197,16 +233,30 @@ public class AuditServiceImpl implements AuditService {
         event.put(key, value);
     }
 
+    /**
+     * Возвращает имя namespace пода или null, если переменная окружения
+     * не задана или пуста.
+     */
     private String getPodNamespace() {
         String envName = auditLibProperties.getPodNamespaceEnvName();
+        if (!StringUtils.hasText(envName)) {
+            return null;
+        }
         String value = System.getenv(envName);
-        return value != null ? value : "";
+        return StringUtils.hasText(value) ? value : null;
     }
 
+    /**
+     * Возвращает имя пода или null, если переменная окружения
+     * не задана или пуста.
+     */
     private String getPodName() {
         String envName = auditLibProperties.getPodNameEnvName();
+        if (!StringUtils.hasText(envName)) {
+            return null;
+        }
         String value = System.getenv(envName);
-        return value != null ? value : "";
+        return StringUtils.hasText(value) ? value : null;
     }
 
     private void addStaticFields(Map<String, Object> event,
