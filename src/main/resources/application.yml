@@ -138,9 +138,9 @@ audit-events:
       auditEventStart:
         oper_description: "Начало перевода модели в архив"
       auditEventSuccess:
-        oper_description: "Модель [{model}] переведена в архив пользователем [{staff_id}]"
+        oper_description: "Процесс перевода модели [{model}] в статус Архив инициирован пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка перевода модели [{model}] в архив пользователем [{staff_id}]: {error_message}"
+        oper_description: "Ошибка инициации перевода модели [{model}] в статус Архив пользователем [{staff_id}]: {error_message}"
       # Событие отмена разработки модели в СУМ
     - event-code: "SUMD_CANCELMODEL"
       schema: "vtb"
@@ -152,9 +152,9 @@ audit-events:
       auditEventStart:
         oper_description: "Начало отмены разработки модели"
       auditEventSuccess:
-        oper_description: "Разработка модели [{model}] отменена пользователем [{staff_id}]"
+        oper_description: "Процесс отмены разработки модели [{model}] инициирован в СУМ пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка отмены разработки модели [{model}] пользователем [{staff_id}]: {error_message}"
+        oper_description: "Ошибка инициации процесса отмены разработки модели  [{model}] в СУМ пользователем [{staff_id}]: {error_message}"
       # Событие выгрузки отчета в СУМ
     - event-code: "SUMD_UPLOADREPORT"
       schema: "vtb"
@@ -180,9 +180,9 @@ audit-events:
       auditEventStart:
         oper_description: "Начало закрытия задачи"
       auditEventSuccess:
-        oper_description: "Задача [{task_id}] успешно закрыта пользователем [{staff_id}]"
+        oper_description: "Задача [{task_id}] закрыта по модели [{model}] пользователем [{staff_id}]"
       auditEventFailure:
-        oper_description: "Ошибка закрытия задачи [{task_id}] пользователем [{staff_id}]: {error_message}"
+        oper_description: "Ошибка закрытия задачи [{task_id}] по модели [{model}] пользователем [{staff_id}]: {error_message}"
       # Событие откат модели в СУМ
     - event-code: "SUMD_ROLLBACKMODEL"
       schema: "vtb"
@@ -194,7 +194,7 @@ audit-events:
       auditEventStart:
         oper_description: "Начало отката модели"
       auditEventSuccess:
-        oper_description: "Модель [{model}] успешно откачена пользователем [{staff_id}]"
+        oper_description: "Откат модели [{model}] выполнен пользователем [{staff_id}]"
       auditEventFailure:
         oper_description: "Ошибка отката модели [{model}] пользователем [{staff_id}]: {error_message}"
       # Событие создания модели в СУРМ
