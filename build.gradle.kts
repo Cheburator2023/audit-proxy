@@ -2,12 +2,12 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     java
-    id("org.springframework.boot") version "3.4.5"
+    id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "ru.vtb"
-version = "0.0.12-SNAPSHOT"
+version = "0.0.13-SNAPSHOT"
 description = "audit-proxy"
 
 java {
@@ -38,7 +38,7 @@ repositories {
 dependencyManagement {
     imports {
         // BOM Spring Boot
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.5")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.6")
         // BOM Аудита 2.0
         mavenBom("ru.vtb.omni:tsau-audit-lib-bom:7.0.0.5")
     }
@@ -77,5 +77,5 @@ tasks.withType<Test> {
 }
 
 tasks.withType<BootJar> {
-    archiveFileName.set("audit-sidecar-v2.0.9.jar")
+    archiveFileName.set("audit-sidecar-v2.1.0.jar")
 }
