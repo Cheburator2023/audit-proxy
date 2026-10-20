@@ -10,23 +10,31 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.boot.ssl.SslBundles;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Расширение ServletKafkaProducerInitializer из библиотеки tsau-audit-lib.
- * Использует собственный {@link AuditMapSerializer}, который корректно
- * сериализует MAP-поля (additionalParams).
+ * Расширение {@link ServletKafkaProducerInitializer} из библиотеки tsau-audit-lib
+ * (версия 8.0.0.16+). Использует собственный {@link AuditMapSerializer}, который
+ * корректно сериализует MAP-поля ({@code additionalParams}) и ARRAY-поля
+ * ({@code event_techCodes}).
+ * Регистрируется в
+ * {@link ru.vtb.auditproxy.config.AuditKafkaProducerOverrideConfig} с {@code @Primary},
+ * чтобы подменить бин библиотеки без её модификации.
  *
- * Регистрируется в {@link ru.vtb.auditproxy.config.AuditKafkaProducerOverrideConfig}
- * с @Primary, чтобы подменить бин библиотеки без её модификации.
+ * <p>ВАЖНО (8.0.0.16): начиная с этой версии конструктор
+ * {@code ServletKafkaProducerInitializer} требует {@link SslBundles} — они
+ * используются для применения SSL-конфигурации из Spring Boot. Avro-схемы
+ * встроены в библиотеку, обращения к топику {@code audit-v2-schema} больше нет.</p>
  *
- * ВАЖНО: Java-контракт ServletKafkaProducerInitializer требует, чтобы
- * schemaRepository был доступен во время вызова initialize() — который
- * вызывается из конструктора суперкласса. Поэтому используем статический
- * holder, заполняемый перед созданием инстанса.
+ * <p>ВАЖНО (Java-контракт): родительский конструктор
+ * {@code ServletKafkaProducerInitializer} вызывает {@code get()}
+ * (а значит и наш {@link #initialize()}) до того, как тело конструктора
+ * наследника будет выполнено. Поэтому {@link SchemaRepository} передаётся
+ * через статический holder.</p>
  */
 @Slf4j
 public class AuditProxyKafkaProducerInitializer extends ServletKafkaProducerInitializer {
@@ -38,8 +46,9 @@ public class AuditProxyKafkaProducerInitializer extends ServletKafkaProducerInit
     }
 
     public AuditProxyKafkaProducerInitializer(OmniAuditKafkaProperties defaultKafkaProperties,
-                                              SchemaRepository schemaRepository) throws Exception {
-        super(defaultKafkaProperties, schemaRepository);
+                                              SchemaRepository schemaRepository,
+                                              SslBundles sslBundles) throws Exception {
+        super(defaultKafkaProperties, schemaRepository, sslBundles);
         log.info("AuditProxyKafkaProducerInitializer initialized with AuditMapSerializer");
     }
 

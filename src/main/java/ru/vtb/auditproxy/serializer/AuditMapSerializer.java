@@ -32,7 +32,6 @@ import java.util.UUID;
  * Кастомный сериализатор, устраняющий баг библиотеки tsau-audit-lib,
  * при котором поля типа MAP и RECORD всегда пишутся как null
  * (см. AvroHashMapSerializer в tsau-audit-lib-kafka-sender).
- *
  * Отличия от библиотечного:
  *  - корректно сериализует MAP-поля (additionalParams) в Map&lt;String,String&gt;;
  *  - корректно сериализует ARRAY-поля (event_techCodes) в GenericData.Array;

@@ -57,7 +57,6 @@ public class AuditController {
      * Дополняет запрос данными HTTP-контекста:
      *  - recipientIp = HttpServletRequest::getLocalAddr;
      *  - traceId/spanId — из W3C-заголовка traceparent (позиции 2 и 3).
-     *
      * Если значения уже заданы в теле запроса, они не перезаписываются.
      */
     private void enrichRequestFromHttpContext(AuditRequest request, HttpServletRequest httpRequest) {

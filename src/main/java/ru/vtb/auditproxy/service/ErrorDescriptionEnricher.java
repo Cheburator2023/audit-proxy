@@ -14,18 +14,15 @@ import java.util.Map;
 /**
  * Обогащает oper_description события аудита согласно требованиям
  * 43_1_СС_Аудит_Описание_схем_данных_СУМ.
- *
  * Поддерживает два механизма:
  *   1. Подстановка плейсхолдеров {key} в шаблон oper_description
  *      (шаблон задаётся в application.yml в auditEventSuccess/auditEventFailure).
  *      Алиасы контекста: {model}, {staff_id}, {task_id}, {report}, {error_message}.
  *   2. Fallback для FAILURE: если после подстановки текст ошибки не попал
  *      в сообщение, он добавляется в конец через ": ".
- *
  * Примеры шаблонов (application.yml):
  *   SUCCESS: "Модель [{model}] успешно создана пользователем [{staff_id}]"
  *   FAILURE: "Ошибка создания модели пользователем [{staff_id}]: {error_message}"
- *
  * Алиасы:
  *   {model}         → additionalFields.modelAlias || additionalFields.modelId
  *   {task_id}       → additionalFields.taskId

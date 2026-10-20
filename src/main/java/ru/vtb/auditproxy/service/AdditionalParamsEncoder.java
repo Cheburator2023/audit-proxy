@@ -9,7 +9,6 @@ import java.util.Map;
 /**
  * Кодирует additionalFields (Map&lt;String,Object&gt;) в Map&lt;String,String&gt;
  * для Avro-схемы vtb.avsc (additionalParams объявлен как map&lt;string,string&gt;).
- *
  * null-значения и null-ключи пропускаются.
  * Объекты преобразуются в String через toString().
  */

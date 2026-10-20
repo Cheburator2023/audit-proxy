@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "ru.vtb"
-version = "0.0.13-SNAPSHOT"
+version = "0.0.14-SNAPSHOT"
 description = "audit-proxy"
 
 java {
@@ -40,7 +40,7 @@ dependencyManagement {
         // BOM Spring Boot
         mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.6")
         // BOM Аудита 2.0
-        mavenBom("ru.vtb.omni:tsau-audit-lib-bom:7.0.0.5")
+        mavenBom("ru.vtb.omni:tsau-audit-lib-bom:8.0.0.16")
     }
 }
 
@@ -77,5 +77,5 @@ tasks.withType<Test> {
 }
 
 tasks.withType<BootJar> {
-    archiveFileName.set("audit-sidecar-v2.1.0.jar")
+    archiveFileName.set("audit-sidecar-v2.1.1.jar")
 }
