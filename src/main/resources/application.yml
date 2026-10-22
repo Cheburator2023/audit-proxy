@@ -92,7 +92,7 @@ audit:
   # Резолверы для полей инициатора (если нет токена)
   default-resolver:
     sub: ${DEFAULT_RESOLVER_SUB:unknown}
-    channel: ${DEFAULT_RESOLVER_CHANNEL:unknown}
+    channel: ${DEFAULT_RESOLVER_CHANNEL:service}
 
   # Контекст деплоя (переменные окружения для podName/namespace)
   deployment-context:

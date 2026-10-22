@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Маппит поля инициатора события аудита в Map события.
@@ -29,6 +30,13 @@ public class InitiatorFieldMapper {
     private static final String FIELD_STAFF_ID = "staff_id";
     private static final String FIELD_STAFF_ROLE_ID = "staff_roleId";
 
+    /**
+     * Допустимые значения initiator_channel согласно документации
+     */
+    private static final Set<String> ALLOWED_CHANNELS = Set.of(
+            "internal", "external", "apic", "service", "smmb", "SMBGuest", "trust"
+    );
+
     public void mapInitiator(AuditRequest request,
                              Map<String, Object> event,
                              AuditLibProperties auditLibProperties) {
@@ -37,7 +45,7 @@ public class InitiatorFieldMapper {
 
         if (initiator == null) {
             event.put(FieldsConstant.LOGIN_FIELD_NAME, auditLibProperties.getSub());
-            event.put(FieldsConstant.CHANNEL_FIELD_NAME, auditLibProperties.getChannel());
+            event.put(FieldsConstant.CHANNEL_FIELD_NAME, resolveChannel(null, auditLibProperties));
             return;
         }
 
@@ -62,17 +70,33 @@ public class InitiatorFieldMapper {
      * Разрешает initiator_channel по иерархии:
      *  1. значение от основного приложения (JWT/x-channel);
      *  2. audit.default-resolver.channel;
-     *  3. 'unknown'.
+     *  3. "service" (безопасное значение по умолчанию, допустимое документацией).
+     *
+     * Если полученное значение не входит в {@link #ALLOWED_CHANNELS},
+     * логируется предупреждение и используется "service".
      */
     private Object resolveChannel(Map<String, Object> initiator, AuditLibProperties auditLibProperties) {
-        Object channel = initiator.get("channel");
-        if (channel != null && !channel.toString().isEmpty()) {
-            return channel;
+        Object channel = null;
+
+        if (initiator != null) {
+            channel = initiator.get("channel");
         }
-        if (auditLibProperties.getChannel() != null && !auditLibProperties.getChannel().isEmpty()) {
-            return auditLibProperties.getChannel();
+
+        if (channel == null || channel.toString().isEmpty()) {
+            channel = auditLibProperties.getChannel();
         }
-        return "unknown";
+
+        if (channel == null || channel.toString().isEmpty()) {
+            return "service";
+        }
+
+        String channelStr = channel.toString();
+        if (!ALLOWED_CHANNELS.contains(channelStr)) {
+            log.warn("Недопустимое значение initiator_channel: '{}'. Допустимые значения: {}. Используется 'service'.",
+                    channelStr, ALLOWED_CHANNELS);
+            return "service";
+        }
+        return channelStr;
     }
 
     private void putIfNotNull(Map<String, Object> event, String key, Object value) {

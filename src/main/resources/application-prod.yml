@@ -81,8 +81,8 @@ audit:
 
   # Значения по умолчанию для полей sub/channel (если нет токена – не используется)
   default-resolver:
-    sub: "unknown"
-    channel: "unknown"
+    sub: ${DEFAULT_RESOLVER_SUB:unknown}
+    channel: ${DEFAULT_RESOLVER_CHANNEL:service}
 
   # Health check
   health:

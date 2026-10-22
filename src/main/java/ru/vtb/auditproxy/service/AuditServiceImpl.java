@@ -45,6 +45,7 @@ public class AuditServiceImpl implements AuditService {
     private final AdditionalParamsEncoder additionalParamsEncoder;
     private final ErrorDescriptionEnricher errorDescriptionEnricher;
     private final SchemaFieldResolver schemaFieldResolver;
+    private final OrphanedStartAuditMonitor orphanedStartAuditMonitor;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .findAndRegisterModules()
@@ -53,8 +54,11 @@ public class AuditServiceImpl implements AuditService {
 
     @Override
     public AuditResponse sendAuditEvent(AuditRequest request) {
+        String correlationId = request.getCorrelationId();
+        String eventCode = request.getEventCode();
+        EventClass eventClass = request.getEventClass();
         log.debug("Building audit event: eventCode={}, eventClass={}, correlationId={}",
-                request.getEventCode(), request.getEventClass(), request.getCorrelationId());
+                eventCode, eventClass, correlationId);
 
         Map<String, Object> auditEvent = buildAuditEvent(request);
 
@@ -72,13 +76,18 @@ public class AuditServiceImpl implements AuditService {
 
         try {
             auditEventSender.sendEvent(auditEvent, true);
+            if (eventClass == EventClass.START) {
+                orphanedStartAuditMonitor.registerStart(correlationId);
+            } else {
+                orphanedStartAuditMonitor.unregister(correlationId);
+            }
             log.info("Audit event sent successfully: eventCode={}, correlationId={}",
-                    request.getEventCode(), request.getCorrelationId());
+                    eventCode, correlationId);
             return new AuditResponse("accepted", "Audit event processed");
         } catch (Exception e) {
             // Дополнительное логирование сообщения при ошибке
             log.error("Failed to send audit event: eventCode={}, correlationId={}, eventPayload={}",
-                    request.getEventCode(), request.getCorrelationId(), auditEvent, e);
+                    eventCode, correlationId, auditEvent, e);
             throw new AuditSendException("Audit send failed: " + e.getMessage(), e);
         }
     }
